@@ -18,7 +18,7 @@ def main():
 
     while True:
         print(base_menu)
-        logger.info(f"Main menu displayed: {[item for item in base_menu.split("\n")]}")
+        logger.info(f"Main menu displayed: {[item for item in base_menu.split('\n')]}")
         user_input = input("Select an action and enter its number: ").strip()
         print()
 
@@ -45,7 +45,7 @@ def main():
                     logger.warning(
                         f"User tried to add a task that already exists - {user_task}."
                     )
-                    print("T2ask already exists!\n")
+                    print("Task already exists!\n")
                 else:
                     add_task(database_tasks, create_task(database_tasks, user_task))
                     logger.info(f"Task added successfully: {user_task}.")
@@ -76,16 +76,19 @@ def main():
             if check_empty(database_tasks):
                 continue
 
-            edit_menu = "--- Edit menu ---\n" \
-                        "1. Edit task\n" \
-                        "2. Edit task status\n" \
-                        "3. Back"
+            edit_menu = (
+                "--- Edit menu ---\n" "1. Edit task\n" "2. Edit task status\n" "3. Back"
+            )
 
             while True:
                 print(edit_menu)
-                logger.debug(f"The menu has opened: {[item for item in edit_menu.split("\n")]}")
+                logger.debug(
+                    f"The menu has opened: {[item for item in edit_menu.split('\n')]}"
+                )
 
-                user_selection = input("Choose an edit option and enter the number: ").strip()
+                user_selection = input(
+                    "Choose an edit option and enter the number: "
+                ).strip()
                 logger.info(f"The user entered - {user_selection}")
                 print()
 
@@ -99,17 +102,23 @@ def main():
                         view_tasks(database_tasks)
                         logger.debug(f"Task List: {database_tasks}")
 
-                        id_task = input("Enter the number of the task you want to edit: ")
+                        id_task = input(
+                            "Enter the number of the task you want to edit: "
+                        )
                         logger.info(f"The user selected task number {id_task}.")
                         if check_task_number_input(database_tasks, id_task):
                             continue
 
                         old_title = find_task(database_tasks, id_task)["title"]
                         replace_task = (
-                            input("Enter the new title of the task: ").capitalize().strip()
+                            input("Enter the new title of the task: ")
+                            .capitalize()
+                            .strip()
                         )
                         editing_task_title(database_tasks, id_task, replace_task)
-                        logger.info(f"Task edited successfully: {old_title} -> {replace_task}.")
+                        logger.info(
+                            f"Task edited successfully: {old_title} -> {replace_task}."
+                        )
                         print("Task successfully updated.\n")
 
                         user_answer = ask_yes_no("Edit another task? yes/no: ")
@@ -128,7 +137,9 @@ def main():
                         view_tasks(database_tasks)
                         logger.debug(f"Task List: {database_tasks}")
 
-                        id_task = input("Enter the number of the task you want to edit: ")
+                        id_task = input(
+                            "Enter the number of the task you want to edit: "
+                        )
                         logger.info(f"The user selected task number {id_task}.")
                         if check_task_number_input(database_tasks, id_task):
                             continue
@@ -136,7 +147,11 @@ def main():
                         old_status = find_task(database_tasks, id_task)["status"]
                         while True:
                             new_status = (
-                                input("Enter the new status (in progress/done/paused) of the task: ").lower().strip()
+                                input(
+                                    "Enter the new status (in progress/done/paused) of the task: "
+                                )
+                                .lower()
+                                .strip()
                             )
                             if new_status not in ("in progress", "done", "paused"):
                                 print()
@@ -148,7 +163,9 @@ def main():
                             break
 
                         editing_task_status(database_tasks, id_task, new_status)
-                        logger.info(f"Task status changed successfully {old_status} -> {new_status}.")
+                        logger.info(
+                            f"Task status changed successfully {old_status} -> {new_status}."
+                        )
                         print("Task successfully updated.\n")
 
                         user_answer = ask_yes_no("Edit another task? yes/no: ")
@@ -200,7 +217,7 @@ def main():
                 "\n--- File Menu Manager ---\n"
                 "1. Sort files\n"
                 "2. Read files\n"
-                "3. Delete files\n"
+                "3. Delete directory or file\n"
                 "4. Back"
             )
 
@@ -213,13 +230,23 @@ def main():
 
             while True:
                 print(menu_work_with_files)
+                logger.debug(
+                    f"User opened the file management menu - {[item for item in menu_work_with_files.split('\n')]}"
+                )
+
                 user_input = input(
                     "Select an action to work with files and enter its number: "
                 ).strip()
 
                 if user_input == "1":
+                    logger.info("User selected the file sorting action")
                     while True:
                         print(menu_sort_files)
+                        logger.debug(
+                            f" {[item for item 
+                        in menu_sort_files.split('\n')]}"
+                        )
+
                         sorting_option = input(
                             "Choose a sorting option and enter its number: "
                         ).strip()
@@ -229,10 +256,17 @@ def main():
                             "2",
                             "3",
                         ):
-                            print("Invalid input!")
+                            print("\nInvalid input!")
+                            logger.warning(
+                                f"User entered an invalid value - {sorting_option}"
+                            )
+                            print()
                             continue
 
                         if sorting_option == "3":
+                            logger.info(
+                                f"User selected Back, returning to the file operations menu - {[item for item in menu_work_with_files.split('\n')]}"
+                            )
                             break
 
                         else:
@@ -241,52 +275,125 @@ def main():
                                     r"Enter the absolute path of the directory to sort files: "
                                 )
                                 if not is_valid_directory(to_path(path_for_sort)):
-                                    print("Invalid input path!")
+                                    print("\nInvalid input path!")
+                                    logger.warning(
+                                        f"Incorrect path specified - {path_for_sort}"
+                                    )
+                                    print()
                                     continue
                                 break
 
                             path_directory = to_path(path_for_sort)
                             if sorting_option == "1":
+                                logger.info(
+                                    "User selected the action to sort files by type (extension)."
+                                )
                                 sort_by_file_type(path_directory)
                                 break
 
                             if sorting_option == "2":
+                                logger.info(
+                                    "User selected the action to sort files by date."
+                                )
                                 sort_by_file_date(path_directory)
                                 break
 
-                elif user_input == "3":
+                elif user_input == "2":
+                    logger.info("User selected the file reading action.")
                     while True:
-                        path_to_remove = input("Enter the absolute path to remove: ")
-                        str_to_path = to_path(path_to_remove)
-                        if not is_valid_path(str_to_path):
-                            print("Invalid input path!")
+                        path_to_file = input(r"Enter the absolute path of the file: ")
+                        path_to_read = to_path(path_to_file)
+                        if not is_valid_file(path_to_read):
+                            print(
+                                "\nInvalid input path! The specified path is not a file."
+                            )
+                            logger.warning(
+                                f"Incorrect path specified - {path_to_read}. The specified path is not a file."
+                            )
+                            print()
                             continue
 
-                        if str_to_path.is_dir() and any(str_to_path.iterdir()):
-                            answer = (
-                                input(
-                                    "Warning: the directory has data inside. Proceed with deletion? (yes/no): "
-                                )
-                                .lower()
-                                .strip()
+                        text_file = read_file(path_to_read)
+                        print(text_file)
+                        logger.info("File reading was successful.")
+                        break
+
+                elif user_input == "3":
+                    logger.info("User selected the file deletion action.")
+                    while True:
+                        str_path = input("Enter the absolute path to remove: ")
+                        path_to_remove = to_path(str_path)
+                        if not is_valid_path(path_to_remove):
+                            print("\nInvalid input path!")
+                            logger.warning(
+                                f"Incorrect path specified - {path_to_remove}"
                             )
+                            print()
+                            continue
 
-                            if answer != "no":
-                                remove_file(str_to_path, recursive=True)
-                                break
+                        if path_to_remove.is_dir() and any(path_to_remove.iterdir()):
+                            print()
+                            logger.warning(
+                                f"There are files in the specified directory — {path_to_remove}"
+                            )
+                            while True:
+                                answer = (
+                                    input(
+                                        "Warning: the directory has data inside. Proceed with deletion? (yes/no): "
+                                    )
+                                    .lower()
+                                    .strip()
+                                )
 
-                            else:
-                                print("Operation cancelled.")
+                                if answer == "yes":
+                                    remove_file(path_to_remove, recursive=True)
+                                    logger.info(
+                                        "The user chose to delete the directory along with its contents."
+                                    )
+                                    logger.info(
+                                        f"Deletion was successful at the path — {path_to_remove}"
+                                    )
+                                    break
+
+                                elif answer == "no":
+                                    print("Operation cancelled.")
+                                    logger.info(
+                                        f"The deletion operation at the specified path was canceled — {path_to_remove}"
+                                    )
+                                    break
+
+                                else:
+                                    print("\nInvalid input!")
+                                    logger.warning(
+                                        f"User entered an invalid value - {answer}"
+                                    )
+                                    print()
+                                    continue
+
                                 break
 
                         else:
-                            remove_file(str_to_path, recursive=False)
+                            remove_file(path_to_remove, recursive=False)
+                            logger.info(
+                                f"File deletion at the specified path was successful — {path_to_remove}"
+                            )
                             break
 
                 elif user_input == "4":
+                    logger.info(
+                        f"The user selected the 'Back' option to return to the main menu. - {[item for item in base_menu.split('\n')]}"
+                    )
                     break
 
+                else:
+                    print("\nThe entered data is invalid.")
+                    logger.warning(f"The entered data is invalid - {user_input}.")
+                    print()
+                    continue
+
         elif user_input == "6":
+            logger.info("The user selected the 'Exit' option to close the program.")
+            logger.info("The program has finished its execution.")
             break
 
 
