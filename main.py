@@ -1,9 +1,53 @@
 from app.organize import *
 from app.file_parse import *
+from utils.helpers import *
 from app.logs import logger
 
 
-def main():
+PROMPT_ADD_ANOTHER = "Add another task? yes/no: "
+PROMPT_EDIT_ANOTHER = "Edit another task? yes/no: "
+PROMPT_DELETE_ANOTHER = "Delete another task? yes/no: "
+
+
+def main() -> None:
+    """
+    File Organize Tool
+
+    This script is a command-line interface (CLI) tool that allows the user to manage tasks and perform basic file operations.
+
+    Main features:
+
+    1. Add task
+       - Allows the user to create a new task with a title, creation timestamp, and initial status ("in progress").
+       - Prevents adding duplicate tasks or tasks with empty titles.
+
+    2. View tasks
+       - Displays all existing tasks with their ID, title, creation time, and current status.
+
+    3. Edit task
+       - Edit task title or status.
+       - Allows editing multiple tasks in one session.
+       - Status can be changed to "in progress", "done", or "paused".
+
+    4. Delete task
+       - Deletes a task by its ID.
+       - Renumbers remaining tasks sequentially.
+       - Allows deleting multiple tasks in one session.
+
+    5. File operations
+       - Sort files in a directory by type (extension) or modification date.
+       - Read and display the contents of text, log, or binary files.
+       - Delete files or directories (with optional recursive deletion for directories containing files).
+
+    6. Exit
+       - Closes the program.
+
+    Additional features:
+    - Persistent task storage using a binary file (`tasks.bin`) with automatic loading and saving.
+    - Logging of all user actions, warnings, and errors to a log file (`app.log`) and the console.
+    - Input validation to ensure correct task IDs, menu selections, and file/directory paths.
+    :return: None
+    """
     base_menu = (
         "--- File Organize Tool ---\n"
         "1. Add task\n"
@@ -51,16 +95,8 @@ def main():
                     logger.info(f"Task added successfully: {user_task}.")
                     print(f"Task added successfully: {user_task}.\n")
 
-                    user_answer = (
-                        ask_yes_no("Add another task? yes/no: ").lower().strip()
-                    )
-
-                    if user_answer == "no":
-                        logger.info("User returned to the main menu.")
-                        print()
+                    if not ask_continue(PROMPT_ADD_ANOTHER):
                         break
-
-                    logger.info("User selected: Add another task.")
 
         elif user_input == "2":
             logger.info("User selected action: View Tasks.")
@@ -98,16 +134,10 @@ def main():
 
                 if user_selection == "1":
                     logger.info("The user selected option 1 - 'Task Editing'.")
-                    while True:
-                        view_tasks(database_tasks)
-                        logger.debug(f"Task List: {database_tasks}")
 
-                        id_task = input(
-                            "Enter the number of the task you want to edit: "
-                        )
-                        logger.info(f"The user selected task number {id_task}.")
-                        if check_task_number_input(database_tasks, id_task):
-                            continue
+                    prompt = "Enter the number of the task you want to edit: "
+                    while True:
+                        id_task = select_option(database_tasks, prompt)
 
                         old_title = find_task(database_tasks, id_task)["title"]
                         replace_task = (
@@ -121,61 +151,40 @@ def main():
                         )
                         print("Task successfully updated.\n")
 
-                        user_answer = ask_yes_no("Edit another task? yes/no: ")
-
-                        if user_answer == "no":
-                            logger.info("User returned to the main menu.")
-                            print()
+                        if not ask_continue(PROMPT_EDIT_ANOTHER):
                             break
-
-                        logger.info("User selected: Edit another task.")
 
                 elif user_selection == "2":
                     logger.info("User selected action: Edit task status.")
 
-                    while True:
-                        view_tasks(database_tasks)
-                        logger.debug(f"Task List: {database_tasks}")
+                    prompt = "Enter the number of the task you want to edit: "
+                    id_task = select_option(database_tasks, prompt)
 
-                        id_task = input(
-                            "Enter the number of the task you want to edit: "
+                    old_status = find_task(database_tasks, id_task)["status"]
+                    while True:
+                        new_status = (
+                            input(
+                                "Enter the new status (in progress/done/paused) of the task: "
+                            )
+                            .lower()
+                            .strip()
                         )
-                        logger.info(f"The user selected task number {id_task}.")
-                        if check_task_number_input(database_tasks, id_task):
+                        if new_status not in ("in progress", "done", "paused"):
+                            print(f"\nInvalid value entered - {new_status}.")
+                            logger.warning(f"Invalid value entered - {new_status}.")
+                            print()
                             continue
 
-                        old_status = find_task(database_tasks, id_task)["status"]
-                        while True:
-                            new_status = (
-                                input(
-                                    "Enter the new status (in progress/done/paused) of the task: "
-                                )
-                                .lower()
-                                .strip()
-                            )
-                            if new_status not in ("in progress", "done", "paused"):
-                                print()
-                                print(f"Invalid value entered - {new_status}.")
-                                logger.warning(f"Invalid value entered - {new_status}.")
-                                print()
-                                continue
+                        break
 
-                            break
+                    editing_task_status(database_tasks, id_task, new_status)
+                    logger.info(
+                        f"Task status changed successfully {old_status} -> {new_status}."
+                    )
+                    print("Task successfully updated.\n")
 
-                        editing_task_status(database_tasks, id_task, new_status)
-                        logger.info(
-                            f"Task status changed successfully {old_status} -> {new_status}."
-                        )
-                        print("Task successfully updated.\n")
-
-                        user_answer = ask_yes_no("Edit another task? yes/no: ")
-
-                        if user_answer == "no":
-                            logger.info("User returned to the main menu.")
-                            print()
-                            break
-
-                        logger.info("User selected: Edit another task.")
+                    if not ask_continue(PROMPT_EDIT_ANOTHER):
+                        break
 
                 elif user_selection == "3":
                     logger.info("User returned to the main menu.")
@@ -200,14 +209,8 @@ def main():
                 logger.info(f"Task '{task_title}' deleted successfully.")
                 print(f"Deleted task '{task_title}' successfully.\n")
 
-                user_answer = ask_yes_no("Delete another task? yes/no: ")
-
-                if user_answer == "no":
-                    logger.info("User returned to the main menu.")
-                    print()
+                if not ask_continue(PROMPT_DELETE_ANOTHER):
                     break
-
-                logger.info("User selected: Add another task.")
 
                 if check_empty(database_tasks):
                     break
@@ -237,6 +240,9 @@ def main():
                 user_input = input(
                     "Select an action to work with files and enter its number: "
                 ).strip()
+                prompt = ("1", "2", "3", "4")
+                if check_match_catalog(user_input, prompt):
+                    continue
 
                 if user_input == "1":
                     logger.info("User selected the file sorting action")
@@ -250,17 +256,8 @@ def main():
                         sorting_option = input(
                             "Choose a sorting option and enter its number: "
                         ).strip()
-
-                        if not sorting_option.isdigit() or sorting_option not in (
-                            "1",
-                            "2",
-                            "3",
-                        ):
-                            print("\nInvalid input!")
-                            logger.warning(
-                                f"User entered an invalid value - {sorting_option}"
-                            )
-                            print()
+                        prompt = ("1", "2", "3")
+                        if check_match_catalog(sorting_option, prompt):
                             continue
 
                         if sorting_option == "3":
@@ -274,13 +271,9 @@ def main():
                                 path_for_sort = input(
                                     r"Enter the absolute path of the directory to sort files: "
                                 )
-                                if not is_valid_directory(to_path(path_for_sort)):
-                                    print("\nInvalid input path!")
-                                    logger.warning(
-                                        f"Incorrect path specified - {path_for_sort}"
-                                    )
-                                    print()
+                                if is_valid_directory(to_path(path_for_sort)):
                                     continue
+
                                 break
 
                             path_directory = to_path(path_for_sort)
@@ -288,32 +281,24 @@ def main():
                                 logger.info(
                                     "User selected the action to sort files by type (extension)."
                                 )
+
                                 sort_by_file_type(path_directory)
-                                break
 
                             if sorting_option == "2":
                                 logger.info(
                                     "User selected the action to sort files by date."
                                 )
+
                                 sort_by_file_date(path_directory)
-                                break
 
                 elif user_input == "2":
                     logger.info("User selected the file reading action.")
                     while True:
-                        path_to_file = input(r"Enter the absolute path of the file: ")
-                        path_to_read = to_path(path_to_file)
-                        if not is_valid_file(path_to_read):
-                            print(
-                                "\nInvalid input path! The specified path is not a file."
-                            )
-                            logger.warning(
-                                f"Incorrect path specified - {path_to_read}. The specified path is not a file."
-                            )
-                            print()
+                        path_str = input(r"Enter the absolute path of the file: ")
+                        if not is_valid_file(path_str):
                             continue
 
-                        text_file = read_file(path_to_read)
+                        text_file = read_file(path_str)
                         print(text_file)
                         logger.info("File reading was successful.")
                         break
@@ -321,14 +306,9 @@ def main():
                 elif user_input == "3":
                     logger.info("User selected the file deletion action.")
                     while True:
-                        str_path = input("Enter the absolute path to remove: ")
-                        path_to_remove = to_path(str_path)
+                        path_str = input(r"Enter the absolute path to remove: ")
+                        path_to_remove = to_path(path_str)
                         if not is_valid_path(path_to_remove):
-                            print("\nInvalid input path!")
-                            logger.warning(
-                                f"Incorrect path specified - {path_to_remove}"
-                            )
-                            print()
                             continue
 
                         if path_to_remove.is_dir() and any(path_to_remove.iterdir()):
@@ -347,6 +327,7 @@ def main():
 
                                 if answer == "yes":
                                     remove_file(path_to_remove, recursive=True)
+                                    print("Deletion was successful at the path — {path_to_remove}\n")
                                     logger.info(
                                         "The user chose to delete the directory along with its contents."
                                     )
@@ -370,7 +351,7 @@ def main():
                                     print()
                                     continue
 
-                                break
+                            break
 
                         else:
                             remove_file(path_to_remove, recursive=False)
@@ -384,12 +365,6 @@ def main():
                         f"The user selected the 'Back' option to return to the main menu. - {[item for item in base_menu.split('\n')]}"
                     )
                     break
-
-                else:
-                    print("\nThe entered data is invalid.")
-                    logger.warning(f"The entered data is invalid - {user_input}.")
-                    print()
-                    continue
 
         elif user_input == "6":
             logger.info("The user selected the 'Exit' option to close the program.")

@@ -19,7 +19,13 @@ def is_valid_directory(path: Path) -> bool:
     :param path: Path to a directory.
     :return: True if the path exists and is a directory, otherwise False.
     """
-    return path.exists() and path.is_dir()
+    if path.exists() and path.is_dir():
+        return False
+    else:
+        print("\nInvalid input path!")
+        logger.warning(f"Incorrect path specified - {path}")
+        print()
+        return True
 
 
 def is_valid_path(path: Path) -> bool:
@@ -28,16 +34,29 @@ def is_valid_path(path: Path) -> bool:
     :param path: Path to a directory or a file.
     :return: True if the path exists, otherwise False.
     """
-    return path.exists()
+    if not path.exists():
+        print("\nInvalid input path!")
+        logger.warning(f"Incorrect path specified - {path}")
+        print()
+        return False
+    return True
 
 
-def is_valid_file(path: Path) -> bool:
+def is_valid_file(path: str) -> bool:
     """
     The function checks whether the specified path is a file.
     :param path: Path to the file.
     :return: True if the specified path is a file, otherwise False.
     """
-    return path.is_file()
+
+    if not path.is_file():
+        print("\nInvalid input path! The specified path is not a file.")
+        logger.warning(
+            f"Incorrect path specified - {path}. The specified path is not a file."
+        )
+        print()
+        return False
+    return True
 
 
 def create_folder(path: Path, folder: str) -> Path:
@@ -92,7 +111,7 @@ def sort_by_file_type(path: Path) -> None:
         path_folder = create_folder(path, new_name_folder)
         move_file(item, path_folder)
 
-    print("Sorting completed")
+    print("Sorting completed!")
 
 
 def sort_by_file_date(path: Path) -> None:
@@ -112,10 +131,16 @@ def sort_by_file_date(path: Path) -> None:
         path_folder = create_folder(path, new_name_folder)
         move_file(item, path_folder)
 
-    print("Sorting completed")
+    print("Sorting completed!")
 
 
-def read_file(path: Path) -> str | None:
+def read_file(path: str) -> str | None:
+    """
+    The function reads a file and returns its text content.
+    :param path: Path to a file as a string (str).
+    :return: The text content of a file, or None if the file is empty or not found.
+    """
+    path = to_path(path)
     try:
         if path.suffix == ".txt" or path.suffix == ".log":
             with open(path, "r", encoding="utf-8") as file:
