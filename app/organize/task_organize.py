@@ -3,6 +3,7 @@ from datetime import datetime
 import pickle
 from app.logs import logger
 
+
 # Creating a path to the file for storing user tasks
 folder_path = Path(__file__).resolve().parent
 tasks_file_path = folder_path / "tasks.bin"
@@ -30,21 +31,6 @@ def load_tasks() -> list:
         with tasks_file_path.open("wb") as file:
             pickle.dump(new_tasks_list, file)
         return new_tasks_list
-
-
-def check_match_catalog(user_input: str, prompt: tuple) -> bool:
-    """
-    The function checks the validity of the entered menu task number.
-    :param user_input: The value entered by the user (task number).
-    :param prompt: Tuple of task items.
-    :return: True if the input is invalid, False if it is valid.
-    """
-    if user_input not in prompt:
-        print("\nInvalid value. Please enter a valid number.")
-        logger.warning(f"User selected an invalid main menu option: {user_input}.")
-        print()
-        return True
-    return False
 
 
 def create_task(database: list[dict], user_task: str) -> dict:
@@ -85,22 +71,6 @@ def add_task(database: list[dict], task: dict) -> None:
     """
     database.append(task)
     save_tasks(database)
-
-
-def ask_yes_no(prompt: str) -> str:
-    """
-    The function asks the user to enter yes or no.
-    :param prompt: A template text that asks the user whether they want to continue performing the same action.''
-    :return user_answer(str): yes or no.
-    """
-    while True:
-        user_answer = input(prompt).lower().strip()
-        if user_answer in ("yes", "no"):
-            return user_answer
-
-        print("\nInvalid input! Please select 'yes' or 'no'.")
-        logger.warning(f"User entered invalid value - {user_answer}.")
-        print()
 
 
 def view_tasks(database: list[dict]) -> None:
