@@ -16,7 +16,7 @@ File Organize Tool is a Python CLI application for managing tasks and basic file
 
 ## Project Structure
 - `main.py` — main entry point with CLI menu.
-- `app/organize/organize.py` — task management (CRUD operations).
+- `app/organize/task_organize.py` — task management (CRUD operations).
 - `app/file_parse/file_parse.py` — file and folder operations.
 - `app/logs/logger.py` — logging configuration.
 - `utils/helpers.py` — helper functions (input validation, menu selection).
