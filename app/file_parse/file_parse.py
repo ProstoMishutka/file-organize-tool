@@ -48,7 +48,7 @@ def is_valid_file(path: str) -> bool:
     :param path: Path to the file.
     :return: True if the specified path is a file, otherwise False.
     """
-
+    path = to_path(path)
     if not path.is_file():
         print("\nInvalid input path! The specified path is not a file.")
         logger.warning(
